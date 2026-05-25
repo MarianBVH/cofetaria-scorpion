@@ -17,7 +17,6 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    // 1. Verificăm dacă există deja o sesiune activă când se încarcă pagina
     // 1. Verificăm dacă există deja o sesiune activă când se încarcă componenta
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -28,7 +27,6 @@ export default function Navbar() {
     }
     checkUser()
 
-    // 2. Ascultăm schimbările (când cineva se loghează sau se deloghează)
     // 2. Setăm un "listener" (ascultător) pentru schimbările stării de autentificare
     // Se declanșează automat când utilizatorul se loghează, se deloghează sau sesiunea expiră
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -47,7 +45,6 @@ export default function Navbar() {
     }
   }, [])
 
-  // Funcție pentru a verifica dacă utilizatorul e admin din tabela 'profiles'
   // Funcție pentru a verifica nivelul de acces (rolul) utilizatorului
   // Face o interogare în tabela 'profiles' pentru a vedea dacă câmpul 'rol' este 'admin'
   const checkRole = async (userId: string) => {
@@ -87,16 +84,12 @@ export default function Navbar() {
           <div className="flex space-x-6 items-center">
             <Link href="/" className="hover:text-[#dda15e] transition">Acasă</Link>
             
-            {/* Coșul este vizibil DOAR dacă utilizatorul NU este admin */}
             {/* Link pentru Coșul de cumpărături 
                 Este ascuns intenționat pentru conturile de admin pentru a nu încurca fluxul */}
             {!isAdmin && (
               <Link href="/cart" className="hover:text-[#dda15e] transition font-medium text-[#dda15e]">🛒 Coș</Link>
             )}
 
-            {/* Meniul de Admin (Apare doar dacă isAdmin e true) */}
-
-            {/* Meniul de Admin (Apare doar dacă isAdmin e true) */}
             {/* Meniul de Administrare
                 Afișează scurtături către uneltele de gestiune DOAR pentru utilizatorii cu rol 'admin' */}
             {isAdmin && (
@@ -116,10 +109,8 @@ export default function Navbar() {
                 <div className="bg-white text-gray-800 rounded-md shadow-lg border border-gray-100 overflow-hidden">
                   
                   {user ? (
-                    // Dacă e logat
                     // Meniul pentru un utilizator AUTENTIFICAT
                     <>
-                      {/* Aceste butoane apar DOAR dacă utilizatorul NU este admin */}
                       {/* Aceste opțiuni sunt specifice clienților și sunt ascunse pentru administratori */}
                       {!isAdmin && (
                         <>
@@ -128,14 +119,12 @@ export default function Navbar() {
                         </>
                       )}
                       
-                      {/* Butonul de deconectare apare pentru toată lumea */}
                       {/* Butonul de deconectare este mereu vizibil pentru orice utilizator logat (client sau admin) */}
                       <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition">
                         Deconectare
                       </button>
                     </>
                   ) : (
-                    // Dacă NU e logat
                     // Meniul pentru un vizitator NEAUTENTIFICAT (Oaspete)
                     <>
                       <Link href="/login" className="block px-4 py-2 hover:bg-gray-50 border-b border-gray-100">Logare</Link>
