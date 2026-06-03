@@ -8,10 +8,17 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  // Stări pentru butoanele de ascuns/arătat parola
+  // Am adăugat această stare pentru a controla ce afișează pagina.
+  // Dacă formularul este completat corect și trimis, isSubmitted devine true,
+  // iar pagina va afișa mesajul de verificare a email-ului în loc de formular.
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  
+  // Stări pentru butoanele de ascuns/arătat parola (UX îmbunătățit)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  // Am păstrat structura completă a obiectului formData exact cum am proiectat-o inițial,
+  // pentru a captura toate datele de livrare încă de la înregistrare.
   const [formData, setFormData] = useState({
     nume: '',
     prenume: '',
@@ -24,6 +31,7 @@ export default function Register() {
     confirmareParola: ''
   })
 
+  // Funcție universală de actualizare a stărilor formularului
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
@@ -32,6 +40,7 @@ export default function Register() {
     e.preventDefault()
     setError(null)
 
+    // 1. Verificare de bază pe partea de client înainte de a contacta serverul
     if (formData.parola !== formData.confirmareParola) {
       setError('Parolele nu coincid!')
       return
@@ -39,6 +48,7 @@ export default function Register() {
 
     setLoading(true)
 
+    // 2. Crearea contului în sistemul de autentificare Supabase (tabela auth.users)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.parola,
@@ -50,6 +60,7 @@ export default function Register() {
       return
     }
 
+    // 3. Dacă autentificarea a reușit, populăm tabela 'profiles' legată de acest utilizator
     if (authData.user) {
       const { error: profileError } = await supabase
         .from('profiles')
@@ -66,15 +77,41 @@ export default function Register() {
         ])
 
       if (profileError) {
+        // Tratez eroarea separat pentru a ști dacă a picat la salvarea datelor personale
         setError('Eroare la salvarea profilului: ' + profileError.message)
+        setLoading(false)
       } else {
-        // Redirecționare hard pentru a forța reîncărcarea cu noul cont
-        window.location.href = '/login?registered=true'
+        // MODIFICARE: În loc de `window.location.href = '/login'`, setăm starea la true.
+        // Acest lucru va declanșa afișarea interfeței de succes (verificare email).
+        setIsSubmitted(true)
+        setLoading(false)
       }
     }
-    setLoading(false)
   }
 
+  // INTERFAȚA 1: Afișată DOAR DUPĂ o înregistrare cu succes
+  if (isSubmitted) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100 text-center">
+          <div className="text-6xl mb-4">📧</div>
+          <h2 className="text-2xl font-extrabold text-[#5c3d2e] mb-4">Verifică-ți adresa de email!</h2>
+          <p className="text-gray-600 mb-6">
+            Ți-am trimis un link de confirmare pe adresa <span className="font-bold text-gray-900">{formData.email}</span>. 
+            Contul tău a fost creat, dar trebuie activat făcând click pe linkul din acel email.
+          </p>
+          <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm mb-6 border border-yellow-200">
+            <strong>Notă:</strong> Dacă nu găsești email-ul în Inbox, te rog să verifici și folderul Spam / Junk.
+          </div>
+          <Link href="/login" className="inline-block bg-[#dda15e] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#bc8a50] transition shadow-md w-full">
+            Mergi la pagina de Logare
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // INTERFAȚA 2: Formularul original de înregistrare (afișat implicit)
   return (
     <div className="max-w-md mx-auto mt-10 bg-white p-8 border rounded-lg shadow-sm">
       <h2 className="text-2xl font-bold text-center text-[#5c3d2e] mb-6">Înregistrare Cont Nou</h2>
