@@ -41,7 +41,7 @@ export default function Home() {
   const [ingredientFilters, setIngredientFilters] = useState<Record<string, number>>({})
   // Pagina curentă pentru paginare
   const [currentPage, setCurrentPage] = useState(1)
-  const produsePePagina = 24
+  const produsePePagina = 12
 
   // --- Stări pentru Coșul de Cumpărături și Interacțiuni ---
   // Reține cantitatea selectată temporar pentru fiecare produs înainte de a fi adăugat în coș
@@ -205,7 +205,7 @@ export default function Home() {
                   onClick={() => { setTipFiltru('torturi'); setIsSidebarOpen(false); }} 
                   className={`py-2 rounded font-bold transition ${tipFiltru === 'torturi' ? 'bg-[#5c3d2e] text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
-                  🎂 Torturi (Prestabilite)
+                  🎂 Torturi (La liber)
                 </button>
                 <Link 
                   href="/torturi-personalizate" 
