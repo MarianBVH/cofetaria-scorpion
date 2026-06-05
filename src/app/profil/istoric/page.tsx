@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { genereazaFacturaPDF, DateFactura } from '@/lib/generareFactura'
 
 export default function IstoricComenzi() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comenzi, setComenzi] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
@@ -21,10 +23,10 @@ export default function IstoricComenzi() {
       return
     }
 
-    // Am adăugat extragerea județului din profil
+    // Am adăugat extragerea numelui și telefonului din profil pentru factură
     const { data: ordersData } = await supabase
       .from('orders')
-      .select('*, profiles(judet)')
+      .select('*, profiles(nume, telefon, judet)')
       .eq('user_id', session.user.id)
       .order('data_comanda', { ascending: false })
 
@@ -55,8 +57,45 @@ export default function IstoricComenzi() {
     setExpandedOrderId(expandedOrderId === id ? null : id)
   }
 
+  // Acțiunea actualizată pentru descărcarea facturii
   const handleAfiseazaFactura = (orderId: number) => {
-    alert(`Factura fiscală aferentă comenzii #${orderId} se încarcă în format PDF...`)
+    // Căutăm comanda specifică în state-ul local
+    const cmd = comenzi.find(c => c.id === orderId);
+    if (!cmd) return;
+
+    // Mapăm produsele standard din comandă
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const produseStandard = cmd.items.map((item: any) => ({
+      nume: item.products?.nume || 'Produs necunoscut',
+      cantitate: item.cantitate,
+      pret_per_bucata: Number(item.pret_per_bucata)
+    }));
+
+    // Mapăm torturile personalizate 
+    // Setăm prețul la 0 deoarece prețul final se stabilește de obicei telefonic pentru custom-uri
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const torturiPersonalizate = cmd.customCakes.map((cake: any) => ({
+      nume: `Tort Personalizat (${cake.tip_tort}) - ${cake.greutate}kg`,
+      cantitate: 1,
+      pret_per_bucata: 0 
+    }));
+
+    // Construim obiectul pentru factura PDF
+    const dateFactura: DateFactura = {
+      orderId: cmd.id,
+      dataComanda: cmd.data_comanda,
+      numeClient: cmd.profiles?.nume || 'Client Cofetăria Scorpion',
+      telefon: cmd.profiles?.telefon || '-',
+      adresaFacturare: cmd.adresa_facturare || cmd.adresa_livrare || '-',
+      orasFacturare: cmd.oras_facturare || cmd.oras_livrare || 'Hârșova',
+      tipLivrare: cmd.tip_livrare,
+      metodaPlata: cmd.metoda_plata,
+      total: Number(cmd.total_comanda),
+      produse: [...produseStandard, ...torturiPersonalizate]
+    };
+
+    // Apelăm funcția de generare
+    genereazaFacturaPDF(dateFactura);
   }
 
   if (loading) return <div className="text-center py-20 font-bold text-[#5c3d2e] text-xl">Se încarcă istoricul...</div>
@@ -108,12 +147,14 @@ export default function IstoricComenzi() {
                     <div>
                       <h4 className="font-bold text-gray-800 mb-2">Produse incluse:</h4>
                       <ul className="space-y-2">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {cmd.items.map((item: any) => (
                           <li key={item.id} className="bg-white p-3 rounded-lg border text-sm flex justify-between shadow-sm">
                             <span><span className="font-bold">{item.cantitate}x</span> {item.products?.nume}</span>
                             <span className="font-semibold text-gray-600">{item.pret_per_bucata} RON/buc</span>
                           </li>
                         ))}
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {cmd.customCakes.map((cake: any) => (
                           <li key={cake.id} className="bg-white p-3 rounded-lg border text-sm space-y-1 border-amber-200 bg-amber-50/20 shadow-sm">
                             <div className="flex justify-between font-bold text-amber-900">

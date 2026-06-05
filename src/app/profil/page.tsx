@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 
-// 1. Am scos componenta RenderRow AICI, în afara componentei principale, 
-// pentru a preveni pierderea focusului la tastare.
+// Componenta modulară pe care am creat-o pentru a randa un rând editabil din profil.
+// Aceasta primește datele și funcțiile de update prin props, menținând codul curat.
 const RenderRow = ({ 
   label, 
   valoare, 
@@ -50,30 +50,37 @@ const RenderRow = ({
 }
 
 export default function ProfilUtilizator() {
+  // Stări pentru gestionarea interfeței
   const [loading, setLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Stocarea datelor utilizatorului
   const [email, setEmail] = useState('')
-
+  
+  // Păstrez o copie a datelor originale pentru a putea da "Anulare" sau a verifica dacă au existat modificări
   const [originalData, setOriginalData] = useState({
     nume: '', telefon: '', judet: '', oras: '', adresa: ''
   })
 
+  // Stările pentru fiecare câmp în parte
   const [nume, setNume] = useState('')
   const [telefon, setTelefon] = useState('')
   const [judet, setJudet] = useState('')
   const [oras, setOras] = useState('')
   const [adresa, setAdresa] = useState('')
 
+  // Mențin starea de editare pentru fiecare câmp
   const [isEditing, setIsEditing] = useState<Record<string, boolean>>({
     nume: false, telefon: false, judet: false, oras: false, adresa: false
   })
 
+  // Efect hook apelat la montarea componentei pentru a încărca datele
   useEffect(() => {
     getProfil()
   }, [])
 
+  // Funcție asincronă care preia sesiunea și datele profilului din baza de date
   const getProfil = async () => {
     setLoading(true)
     const { data: { session } } = await supabase.auth.getSession()
@@ -85,6 +92,7 @@ export default function ProfilUtilizator() {
 
     setEmail(session.user.email || '')
 
+    // Caut rândul specific din tabela profiles bazat pe ID-ul din sistemul de Auth
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -110,6 +118,7 @@ export default function ProfilUtilizator() {
     setLoading(false)
   }
 
+  // Verific dacă există vreo discrepanță între datele originale și cele din inputuri
   const hasChanges = 
     nume !== originalData.nume ||
     telefon !== originalData.telefon ||
@@ -117,10 +126,12 @@ export default function ProfilUtilizator() {
     oras !== originalData.oras ||
     adresa !== originalData.adresa
 
+  // Comută un câmp între vizualizare text și input editabil
   const toggleEdit = (camp: string) => {
     setIsEditing(prev => ({ ...prev, [camp]: !prev[camp] }))
   }
 
+  // Funcție pentru butonul de anulare, care resetează stările la datele originale
   const handleAnuleazaModificari = () => {
     setNume(originalData.nume)
     setTelefon(originalData.telefon)
@@ -132,6 +143,7 @@ export default function ProfilUtilizator() {
     setMessage(null)
   }
 
+  // Protecție suplimentară pentru a nu pierde modificările nesalvate la părăsirea paginii
   const handleInapoiAcasa = () => {
     if (hasChanges) {
       const confirmare = window.confirm(
@@ -142,10 +154,23 @@ export default function ProfilUtilizator() {
     window.location.href = '/'
   }
 
-  const handleTrimiteEmailModificare = () => {
-    alert('Funcționalitatea de trimitere email pentru modificarea securizată a contului va fi implementată în următorul pas tehnic.')
+  // Implementarea trimiterii emailului securizat pentru modificarea parolei
+  const handleTrimiteEmailModificare = async () => {
+    setMessage(null)
+    
+    // Deoarece utilizatorul este logat, folosesc emailul preluat din sesiune
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    })
+
+    if (resetError) {
+      setMessage({ type: 'error', text: 'Eroare la trimiterea emailului: ' + resetError.message })
+    } else {
+      setMessage({ type: 'success', text: 'Un link pentru setarea unei noi parole a fost trimis pe adresa ta de email.' })
+    }
   }
 
+  // Funcție asincronă care trimite modificările efectuate în baza de date Supabase
   const handleSalveazaProfil = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsUpdating(true)
@@ -176,6 +201,7 @@ export default function ProfilUtilizator() {
       <h1 className="text-3xl font-extrabold text-[#5c3d2e] mb-2">Profilul Meu</h1>
       <p className="text-gray-500 mb-6">Gestionați informațiile personale asociate contului de client.</p>
 
+      {/* Mesajele dinamice de eroare sau succes */}
       {message && (
         <div className={`p-4 mb-6 rounded-lg font-bold border ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
           {message.type === 'success' ? '✓ ' : '⚠ '} {message.text}
@@ -184,7 +210,7 @@ export default function ProfilUtilizator() {
 
       <form onSubmit={handleSalveazaProfil} className="space-y-4">
         
-        {/* Folosim componenta RenderRow cu datele pasate */}
+        {/* Folosesc componenta mea reutilizabilă RenderRow pentru a păstra UI-ul curat */}
         <RenderRow label="Nume și Prenume" valoare={nume} idCamp="nume" onChangeVal={setNume} isEditing={isEditing.nume} toggleEdit={toggleEdit} />
         
         <div className="border-b border-gray-100 pb-3 pt-2 text-gray-900">
@@ -197,6 +223,7 @@ export default function ProfilUtilizator() {
         <RenderRow label="Oraș / Localitate" valoare={oras} idCamp="oras" onChangeVal={setOras} isEditing={isEditing.oras} toggleEdit={toggleEdit} />
         <RenderRow label="Adresă Completă de Livrare" valoare={adresa} idCamp="adresa" onChangeVal={setAdresa} isEditing={isEditing.adresa} toggleEdit={toggleEdit} tipInput="textarea" />
 
+        {/* Butonul pentru trimiterea emailului de modificare a parolei, acum funcțional */}
         <div className="pt-4 pb-4">
           <button 
             type="button" 
@@ -207,7 +234,7 @@ export default function ProfilUtilizator() {
           </button>
         </div>
 
-        {/* 2. Layout reparat pentru butoane */}
+        {/* Bara inferioară cu opțiuni generale de salvare / ieșire */}
         <div className="flex flex-col md:flex-row gap-4 pt-6 border-t border-gray-100 w-full justify-between items-center">
           
           <button 
