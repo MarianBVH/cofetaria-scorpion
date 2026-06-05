@@ -380,7 +380,7 @@ export default function Home() {
             <div>
               <h3 className="text-2xl font-bold mb-4 text-[#dda15e]">Contactează-ne</h3>
               <p className="flex items-center gap-2 mb-2"><span className="text-xl">📍</span> Șoseaua Constanței nr. 24, Hârșova, Jud. Constanța</p>
-              <p className="flex items-center gap-2 mb-2"><span className="text-xl">📞</span> 07xx xxx xxx</p>
+              <p className="flex items-center gap-2 mb-2"><span className="text-xl">📞</span> 076x xxx xxx</p>
               <p className="flex items-center gap-2 mb-2"><span className="text-xl">✉️</span> contact@cofetariascorpion.ro</p>
               <p className="mt-4 text-gray-300">Suntem bucuroși să vă îndulcim zilele!</p>
             </div>
