@@ -41,7 +41,7 @@ export default function Home() {
   const [ingredientFilters, setIngredientFilters] = useState<Record<string, number>>({})
   // Pagina curentă pentru paginare
   const [currentPage, setCurrentPage] = useState(1)
-  const produsePePagina = 24
+  const produsePePagina = 12
 
   // --- Stări pentru Coșul de Cumpărături și Interacțiuni ---
   // Reține cantitatea selectată temporar pentru fiecare produs înainte de a fi adăugat în coș
@@ -205,7 +205,7 @@ export default function Home() {
                   onClick={() => { setTipFiltru('torturi'); setIsSidebarOpen(false); }} 
                   className={`py-2 rounded font-bold transition ${tipFiltru === 'torturi' ? 'bg-[#5c3d2e] text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
-                  🎂 Torturi (Prestabilite)
+                  🎂 Torturi (La liber)
                 </button>
                 <Link 
                   href="/torturi-personalizate" 
@@ -380,7 +380,7 @@ export default function Home() {
             <div>
               <h3 className="text-2xl font-bold mb-4 text-[#dda15e]">Contactează-ne</h3>
               <p className="flex items-center gap-2 mb-2"><span className="text-xl">📍</span> Șoseaua Constanței nr. 24, Hârșova, Jud. Constanța</p>
-              <p className="flex items-center gap-2 mb-2"><span className="text-xl">📞</span> 07xx xxx xxx</p>
+              <p className="flex items-center gap-2 mb-2"><span className="text-xl">📞</span> 076x xxx xxx</p>
               <p className="flex items-center gap-2 mb-2"><span className="text-xl">✉️</span> contact@cofetariascorpion.ro</p>
               <p className="mt-4 text-gray-300">Suntem bucuroși să vă îndulcim zilele!</p>
             </div>

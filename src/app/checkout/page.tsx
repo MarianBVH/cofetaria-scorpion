@@ -3,17 +3,19 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
+import { genereazaFacturaPDF, DateFactura } from '@/lib/generareFactura'
 
 export default function Checkout() {
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
-  // Modificat: Salvăm ID-ul comenzii finalizate pentru a-l putea folosi la generarea facturii
+  // Salvăm ID-ul comenzii finalizate pentru a-l putea folosi la generarea facturii
   const [successOrderId, setSuccessOrderId] = useState<number | null>(null)
   
   const [validationError, setValidationError] = useState<string | null>(null)
   
   const [userId, setUserId] = useState<string | null>(null)
+  const [numeClient, setNumeClient] = useState('') // Stocăm numele pentru factură
   const [totalGeneral, setTotalGeneral] = useState(0)
   const [cartItems, setCartItems] = useState<any[]>([])
   const [customCartItems, setCustomCartItems] = useState<any[]>([])
@@ -26,7 +28,7 @@ export default function Checkout() {
   const [oras, setOras] = useState('')
   const [adresa, setAdresa] = useState('')
 
-  // Date NOI pentru facturare
+  // Date pentru facturare
   const [aceeasiAdresa, setAceeasiAdresa] = useState(true)
   const [orasFacturare, setOrasFacturare] = useState('')
   const [adresaFacturare, setAdresaFacturare] = useState('')
@@ -50,6 +52,7 @@ export default function Checkout() {
 
     const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
     if (profile) {
+      if (profile.nume) setNumeClient(profile.nume)
       if (profile.telefon) setTelefon(profile.telefon)
       if (profile.adresa) setAdresa(profile.adresa)
       if (profile.oras && oraseLivrare.includes(profile.oras)) setOras(profile.oras)
@@ -167,9 +170,34 @@ export default function Checkout() {
     }
   }
 
-  // Acțiunea butonului de factură temporar
+  // Acțiunea butonului de factură
   const handleAfiseazaFactura = () => {
-    alert(`Aici se va deschide factura PDF pentru comanda #${successOrderId}. Funcționalitatea va fi implementată ulterior.`)
+    if (!successOrderId) return;
+
+    // Determinăm adresa finală de facturare (exact ca la salvarea în baza de date)
+    const orasFacturaFinal = tipLivrare === 'livrare' && aceeasiAdresa ? oras : orasFacturare;
+    const adresaFacturaFinala = tipLivrare === 'livrare' && aceeasiAdresa ? adresa : adresaFacturare;
+
+    // Construim obiectul cu datele necesare, respectând interfața DateFactura
+    const dateFactura: DateFactura = {
+      orderId: successOrderId,
+      dataComanda: new Date().toISOString(),
+      numeClient: numeClient || 'Client Cofetăria Scorpion',
+      telefon: telefon,
+      adresaFacturare: adresaFacturaFinala || '-',
+      orasFacturare: orasFacturaFinal || 'Hârșova', // Fallback pentru ridicare personală
+      tipLivrare: tipLivrare,
+      metodaPlata: metodaPlata,
+      total: totalGeneral,
+      produse: cartItems.map(item => ({
+        nume: item.nume,
+        cantitate: item.cantitate,
+        pret_per_bucata: item.pret
+      }))
+    };
+
+    // Apelăm funcția care generează și descarcă PDF-ul
+    genereazaFacturaPDF(dateFactura);
   }
 
   if (loading) return <div className="text-center py-20 font-bold text-[#5c3d2e] text-xl">Se pregătesc datele...</div>
@@ -184,7 +212,6 @@ export default function Checkout() {
           Îți mulțumim! Comanda ta a fost înregistrată cu succes. Dacă ai adăugat torturi personalizate, te vom contacta în scurt timp la numărul de telefon furnizat.
         </p>
         
-        {/* NOU: Layout pe coloană pentru a acomoda cele 3 butoane */}
         <div className="flex flex-col gap-4 max-w-sm mx-auto">
           <Link href="/" className="bg-[#5c3d2e] text-white font-bold py-3 px-6 rounded hover:bg-[#3e2a20] transition text-center">
             Înapoi la Pagina Principală
@@ -239,7 +266,6 @@ export default function Checkout() {
         {tipLivrare && (
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-6 animate-fadeIn">
             
-            {/* DATE LIVRARE / CONTACT */}
             <h3 className="font-bold text-gray-800 border-b pb-2 mb-4">Date de Contact și Livrare</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -265,7 +291,6 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* SECȚIUNE NOUĂ: DATE FACTURARE */}
             <div className="pt-6 border-t border-gray-200">
               <h3 className="font-bold text-gray-800 mb-4">Adresă de Facturare</h3>
               
@@ -281,7 +306,6 @@ export default function Checkout() {
                 </label>
               )}
 
-              {/* Formularul de facturare se afișează mereu la ridicare, și doar dacă bifa e scoasă la livrare */}
               {(tipLivrare === 'ridicare' || (tipLivrare === 'livrare' && !aceeasiAdresa)) && (
                 <div className="bg-white p-4 rounded border border-gray-200 space-y-4 shadow-sm">
                   <div>
