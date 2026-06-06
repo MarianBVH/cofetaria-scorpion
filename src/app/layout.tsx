@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar' // <-- Importăm noua componentă
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,6 +31,7 @@ export default function RootLayout({
         <footer className="bg-gray-800 text-white text-center py-6 mt-auto">
           <p>&copy; {new Date().getFullYear()} Cofetăria Scorpion - Hârșova. Toate drepturile rezervate.</p>
         </footer>
+        <Analytics />
       </body>
     </html>
   )
