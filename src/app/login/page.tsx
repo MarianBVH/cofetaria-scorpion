@@ -21,7 +21,6 @@ import Link from 'next/link'
  * de a comunica asincron cu API-ul de securitate și de a afișa mesaje de succes sau de eroare corespunzătoare.
  */
 export default function Login() {
-  // Stocăm datele introduse de utilizator în formulare
   /**
    * Stările locale utilizate pentru a reține temporar adresa de email și parola.
    * Valorile acestora se actualizează dinamic pe măsură ce utilizatorul completează câmpurile formularului.
@@ -29,7 +28,6 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   
-  // Stare pentru a comuta vizibilitatea parolei în câmpul de input
   /**
    * Stare booleană care controlează modul de afișare al parolei.
    * Modificarea acestei stări permite alterarea tipului de input între 'password' (text mascat) și 'text' (vizibil),
@@ -37,7 +35,6 @@ export default function Login() {
    */
   const [showPassword, setShowPassword] = useState(false)
   
-  // Stări pentru gestionarea interfeței pe durata cererilor asincrone
   /**
    * Stări destinate managementului interfeței pe durata cererilor asincrone de rețea.
    * Starea 'loading' blochează interacțiunile redundante, prevenind executarea unor operațiuni multiple simultane.
@@ -46,7 +43,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  // Nouă stare: o folosesc pentru a afișa mesaje de succes (ex: când s-a trimis emailul de resetare)
   /**
    * Stare auxiliară utilizată pentru a stoca mesajele de confirmare pozitivă.
    * Se folosește cu precădere pentru a notifica utilizatorul în momentul în care acțiuni secundare,
@@ -54,7 +50,6 @@ export default function Login() {
    */
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Funcția principală care gestionează procesul de autentificare
   /**
    * Funcția asincronă care orchestrează fluxul de logare.
    * Se declanșează la trimiterea (submit) formularului de autentificare.
@@ -72,7 +67,6 @@ export default function Login() {
     setSuccessMessage(null)
     setLoading(true)
 
-    // Aici apelez API-ul Supabase pentru a autentifica utilizatorul cu email și parolă
     /**
      * Se apelează serviciul de autentificare furnizat de Supabase.
      * Această metodă compară adresa de email și parola introduse de utilizator cu cele din baza de date sigură.
@@ -82,7 +76,6 @@ export default function Login() {
       password,
     })
 
-    // Dacă Supabase returnează o eroare, o afișez în interfață
     /**
      * Analiza rezultatului întors de către Supabase.
      * Dacă se întâmpină o eroare (cum ar fi parolă greșită sau cont inexistent),
@@ -94,8 +87,6 @@ export default function Login() {
       return
     }
 
-    // Navigare "hard" (prin window.location) pentru a forța reîncărcarea paginii
-    // Astfel mă asigur că Navbar-ul și restul componentelor preiau noua sesiune din Supabase
     /**
      * În urma validării cu succes a credențialelor, se efectuează o redirecționare directă utilizând obiectul window.
      * Acest tip de navigare forțează reîncărcarea completă a contextului aplicației,
@@ -104,7 +95,6 @@ export default function Login() {
     window.location.href = '/'
   }
 
-  // Funcție nouă: gestionează trimiterea emailului de resetare a parolei
   /**
    * Funcția asincronă creată pentru a gestiona cererile de resetare a parolei.
    * Rolul său este de a valida disponibilitatea adresei de email și de a declanșa trimiterea
@@ -117,7 +107,6 @@ export default function Login() {
     setError(null)
     setSuccessMessage(null)
 
-    // Validez ca utilizatorul să fi introdus adresa de email înainte de a cere resetarea
     /**
      * Sistemul validează existența unei adrese de email introduse anterior.
      * Dacă respectiva căsuță de input este necompletată, execuția se oprește prematur, iar utilizatorul este îndrumat.
@@ -129,8 +118,6 @@ export default function Login() {
 
     setLoading(true)
 
-    // Apelez funcția Supabase care trimite un email cu un link securizat de resetare.
-    // Setez 'redirectTo' către o pagină specială din aplicația mea unde utilizatorul va scrie noua parolă.
     /**
      * Se instruiește sistemul de autentificare să trimită un email de recuperare pe adresa specificată.
      * Variabila 'redirectTo' este esențială, deoarece specifică traiectoria utilizatorului după accesarea linkului din email,
@@ -161,7 +148,6 @@ export default function Login() {
     <div className="max-w-md mx-auto mt-16 bg-white p-8 border rounded-lg shadow-sm">
       <h2 className="text-2xl font-bold text-center text-[#5c3d2e] mb-6">Autentificare</h2>
 
-      {/* Afișarea erorilor generale */}
       {/*
        * Secțiune destinată randării condiționate a eventualelor erori captate pe parcursul autentificării sau resetării.
        * Blocul HTML va apărea vizibil pe ecran numai dacă variabila de stare 'error' are o valoare atribuită.
@@ -172,7 +158,6 @@ export default function Login() {
         </div>
       )}
 
-      {/* Afișarea mesajelor de succes (ex: email trimis) */}
       {/*
        * Similară zonei de eroare, această secțiune este folosită pentru a afișa mesaje cu o conotație pozitivă.
        * Exemplul tipic este confirmarea expedierii cu succes a instrucțiunilor de resetare pe adresa de email.
@@ -206,7 +191,6 @@ export default function Login() {
         <div>
           <div className="flex justify-between items-center">
             <label className="block text-sm font-medium text-gray-700">Parolă</label>
-            {/* Am transformat link-ul vechi într-un buton care declanșează funcția de resetare */}
             {/*
              * Buton integrat în nivelul etichetei, alocat pentru a facilita recuperarea parolei pierdute.
              * Deoarece nu servește trimiterii formularului, acesta primește explicit tipul 'button'.
