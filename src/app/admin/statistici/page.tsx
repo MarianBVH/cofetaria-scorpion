@@ -116,8 +116,8 @@ export default function StatisticiDashboard() {
     });
 
     return [
-      { name: "Livrare la domiciliu", value: livrare },
-      { name: "Ridicare din magazin", value: ridicare }
+      { name: "Livrare", value: livrare },
+      { name: "Ridicare", value: ridicare }
     ];
   };
 
@@ -212,7 +212,7 @@ export default function StatisticiDashboard() {
                     <span className="font-medium text-gray-700 truncate" title={prod.name}>{prod.name}</span>
                   </div>
                   <div className="w-1/4 text-right text-gray-600">{prod.cantitate} buc.</div>
-                  <div className="w-1/4 text-right font-semibold text-amber-600">{prod.valoare} RON</div>
+                  <div className="w-1/4 text-right font-semibold text-amber-600">{prod.valoare.toFixed(2)} RON</div>
                 </div>
               ))}
               {topProductsInfo.sortedProducts.length === 0 && (
@@ -229,7 +229,7 @@ export default function StatisticiDashboard() {
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500 uppercase tracking-wider">Total Încasat (din Top)</p>
-              <p className="text-2xl font-bold text-green-600">{topProductsInfo.totalIncasatDinProduse} RON</p>
+              <p className="text-2xl font-bold text-green-600">{topProductsInfo.totalIncasatDinProduse.toFixed(2)} RON</p>
             </div>
           </div>
         </div>
@@ -314,7 +314,7 @@ export default function StatisticiDashboard() {
                         </div>
                         <div>
                           <p className="text-sm text-amber-700 uppercase tracking-wider">Încasări Totale</p>
-                          <p className="text-3xl font-black text-green-600 mt-1">{statsProduct1.valoare} <span className="text-lg font-medium">RON</span></p>
+                          <p className="text-3xl font-black text-green-600 mt-1">{statsProduct1.valoare.toFixed(2)} <span className="text-lg font-medium">RON</span></p>
                         </div>
                       </div>
                     </div>
@@ -331,7 +331,7 @@ export default function StatisticiDashboard() {
                         </div>
                         <div>
                           <p className="text-sm text-blue-700 uppercase tracking-wider">Încasări Totale</p>
-                          <p className="text-3xl font-black text-green-600 mt-1">{statsProduct2.valoare} <span className="text-lg font-medium">RON</span></p>
+                          <p className="text-3xl font-black text-green-600 mt-1">{statsProduct2.valoare.toFixed(2)} <span className="text-lg font-medium">RON</span></p>
                         </div>
                       </div>
                     </div>
@@ -362,7 +362,7 @@ export default function StatisticiDashboard() {
           <div className="space-y-6 flex-grow flex flex-col justify-center">
             <div className="bg-amber-50 p-6 rounded-xl border border-amber-100">
               <p className="text-sm text-amber-800 uppercase tracking-wider font-semibold">Venit Total</p>
-              <p className="text-4xl font-black text-amber-600 mt-2">{revenueStats.totalRevenue} RON</p>
+              <p className="text-4xl font-black text-amber-600 mt-2">{revenueStats.totalRevenue.toFixed(2)} RON</p>
               <p className="text-sm text-amber-700 mt-1">Generat din {revenueStats.orderCount} comenzi finalizate</p>
             </div>
 
