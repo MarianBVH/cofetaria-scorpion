@@ -10,11 +10,18 @@ const COLORS = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899'
 export default function StatisticiDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uniqueProducts, setUniqueProducts] = useState<string[]>([]);
 
   // Stări independente pentru selectoarele de timp ale fiecărui card
   const [timeTopProducts, setTimeTopProducts] = useState("30");
   const [timeRevenue, setTimeRevenue] = useState("30");
   const [timeDelivery, setTimeDelivery] = useState("30");
+  const [timeSpecific, setTimeSpecific] = useState("30");
+
+  // Stări pentru produsul specific și comparație
+  const [product1, setProduct1] = useState("");
+  const [product2, setProduct2] = useState("");
+  const [isComparing, setIsComparing] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -33,7 +40,17 @@ export default function StatisticiDashboard() {
     if (error) {
       console.error("Eroare la extragerea datelor:", error);
     } else {
-      setOrders(data || []);
+      const fetchedOrders = data || [];
+      setOrders(fetchedOrders);
+
+      // Extragem o listă unică de produse pentru dropdown-ul de căutare
+      const productsSet = new Set<string>();
+      fetchedOrders.forEach(order => {
+        order.order_items.forEach((item: any) => {
+          if (item.products?.nume) productsSet.add(item.products.nume);
+        });
+      });
+      setUniqueProducts(Array.from(productsSet).sort());
     }
     setLoading(false);
   };
@@ -104,15 +121,43 @@ export default function StatisticiDashboard() {
     ];
   };
 
+  // 4. Calcul Produs Specific (pentru comparație)
+  const getSpecificProductStats = (productName: string) => {
+    if (!productName) return { cantitate: 0, valoare: 0 };
+    const filteredOrders = filterOrdersByTime(orders, timeSpecific);
+    let cantitate = 0;
+    let valoare = 0;
+
+    filteredOrders.forEach(order => {
+      order.order_items.forEach((item: any) => {
+        if (item.products?.nume === productName) {
+          cantitate += item.cantitate;
+          valoare += (item.cantitate * item.pret_per_bucata);
+        }
+      });
+    });
+
+    return { cantitate, valoare };
+  };
+
   if (loading) return <div className="p-10 text-center text-lg">Se încarcă statisticile...</div>;
 
   const topProductsInfo = getTopProductsData();
   const revenueStats = getRevenueStats();
   const deliveryStats = getDeliveryStats();
+  const statsProduct1 = getSpecificProductStats(product1);
+  const statsProduct2 = getSpecificProductStats(product2);
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Panou de Statistici</h1>
+
+      {/* Datalist global pentru căutarea prăjiturilor */}
+      <datalist id="lista-prajituri">
+        {uniqueProducts.map(p => (
+          <option key={p} value={p} />
+        ))}
+      </datalist>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
@@ -185,6 +230,114 @@ export default function StatisticiDashboard() {
             <div className="text-center">
               <p className="text-sm text-gray-500 uppercase tracking-wider">Total Încasat (din Top)</p>
               <p className="text-2xl font-bold text-green-600">{topProductsInfo.totalIncasatDinProduse} RON</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 4: Analiză și Comparație Produs Specific */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
+          <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 className="text-xl font-bold text-gray-800">Analiză Produs Specific</h2>
+            <select 
+              value={timeSpecific} 
+              onChange={(e) => setTimeSpecific(e.target.value)}
+              className="border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm font-medium text-gray-900 bg-white p-2"
+            >
+              <option value="7">Ultima săptămână</option>
+              <option value="30">Ultimele 30 de zile</option>
+              <option value="90">Ultimele 3 luni</option>
+              <option value="365">Ultimul an</option>
+              <option value="all">Toată perioada</option>
+            </select>
+          </div>
+
+          <div className="space-y-6">
+            {/* Controalele de selecție */}
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
+              <div className="w-full md:w-1/3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Alege Produsul Principal</label>
+                <input 
+                  type="text"
+                  list="lista-prajituri"
+                  value={product1}
+                  onChange={(e) => setProduct1(e.target.value)}
+                  placeholder="Caută prăjitură..."
+                  className="w-full border border-gray-300 rounded-lg shadow-sm p-2 text-gray-900 focus:ring-amber-500 focus:border-amber-500"
+                />
+              </div>
+
+              <div className="w-full md:w-1/3 flex items-center h-full pb-2">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={isComparing} 
+                    onChange={(e) => {
+                      setIsComparing(e.target.checked);
+                      if (!e.target.checked) setProduct2(""); // Resetăm produsul 2 dacă ascundem
+                    }}
+                    className="w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Compară cu un alt produs</span>
+                </label>
+              </div>
+
+              {isComparing && (
+                <div className="w-full md:w-1/3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Alege Produsul 2</label>
+                  <input 
+                    type="text"
+                    list="lista-prajituri"
+                    value={product2}
+                    onChange={(e) => setProduct2(e.target.value)}
+                    placeholder="Caută produs pentru comparație..."
+                    className="w-full border border-gray-300 rounded-lg shadow-sm p-2 text-gray-900 focus:ring-amber-500 focus:border-amber-500"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Afișarea Datelor */}
+            <div className="mt-8">
+              {!product1 && !product2 ? (
+                <p className="text-gray-500 italic">Selectează un produs pentru a vizualiza datele.</p>
+              ) : (
+                <div className={`grid grid-cols-1 ${isComparing && product2 ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-6`}>
+                  
+                  {/* Date Produs 1 */}
+                  {product1 && (
+                    <div className="bg-amber-50 p-6 rounded-xl border border-amber-200 shadow-sm">
+                      <h3 className="text-lg font-bold text-amber-900 mb-4">{product1}</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-amber-700 uppercase tracking-wider">Cantitate Vândută</p>
+                          <p className="text-3xl font-black text-amber-600 mt-1">{statsProduct1.cantitate} <span className="text-lg font-medium">buc.</span></p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-amber-700 uppercase tracking-wider">Încasări Totale</p>
+                          <p className="text-3xl font-black text-green-600 mt-1">{statsProduct1.valoare} <span className="text-lg font-medium">RON</span></p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Date Produs 2 (Afișat doar dacă comparăm) */}
+                  {isComparing && product2 && (
+                    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
+                      <h3 className="text-lg font-bold text-blue-900 mb-4">{product2}</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-blue-700 uppercase tracking-wider">Cantitate Vândută</p>
+                          <p className="text-3xl font-black text-blue-600 mt-1">{statsProduct2.cantitate} <span className="text-lg font-medium">buc.</span></p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-blue-700 uppercase tracking-wider">Încasări Totale</p>
+                          <p className="text-3xl font-black text-green-600 mt-1">{statsProduct2.valoare} <span className="text-lg font-medium">RON</span></p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
