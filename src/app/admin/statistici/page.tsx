@@ -168,7 +168,7 @@ export default function StatisticiDashboard() {
             <select 
               value={timeTopProducts} 
               onChange={(e) => setTimeTopProducts(e.target.value)}
-              className="border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm p-2"
+              className="border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm font-medium text-gray-900 bg-white p-2"
             >
               <option value="7">Ultima săptămână</option>
               <option value="30">Ultimele 30 de zile</option>
@@ -349,7 +349,7 @@ export default function StatisticiDashboard() {
             <select 
               value={timeRevenue} 
               onChange={(e) => setTimeRevenue(e.target.value)}
-              className="border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm p-2"
+              className="border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm font-medium text-gray-900 bg-white p-2"
             >
               <option value="7">Ultima săptămână</option>
               <option value="30">Ultimele 30 de zile</option>
@@ -381,7 +381,7 @@ export default function StatisticiDashboard() {
             <select 
               value={timeDelivery} 
               onChange={(e) => setTimeDelivery(e.target.value)}
-              className="border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm p-2"
+              className="border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm font-medium text-gray-900 bg-white p-2"
             >
               <option value="7">Ultima săptămână</option>
               <option value="30">Ultimele 30 de zile</option>
