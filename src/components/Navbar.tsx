@@ -96,7 +96,7 @@ export default function Navbar() {
               <div className="flex space-x-4 border-l border-[#7a5240] pl-4 ml-2">
                 <Link href="/admin/produse" className="text-[#ffcc80] hover:text-white transition">Gest. Prăjituri</Link>
                 <Link href="/admin/comenzi" className="text-[#ffcc80] hover:text-white transition">Gest. Comenzi</Link>
-                <Link href="/admin/statistici" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md font-medium">Statistici</Link>
+                <Link href="/admin/statistici" className="text-[#ffcc80] hover:text-white transition">Statistici</Link>
               </div>
             )}
 
