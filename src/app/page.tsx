@@ -41,6 +41,7 @@ export default function Home() {
   const [ingredientFilters, setIngredientFilters] = useState<Record<string, number>>({})
   // Pagina curentă pentru paginare
   const [currentPage, setCurrentPage] = useState(1)
+  // Numărul de produse afișate pe fiecare pagină
   const produsePePagina = 12
 
   // --- Stări pentru Coșul de Cumpărături și Interacțiuni ---
