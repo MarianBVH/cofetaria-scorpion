@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar' // <-- Importăm noua componentă
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="ro">
       <body className={`${inter.className} bg-[#fdfbf7] min-h-screen flex flex-col`}>
         
+        <Analytics/>
         {/* Folosim componenta Navbar aici */}
         <Navbar />
 
