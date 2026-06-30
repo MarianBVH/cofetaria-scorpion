@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 
@@ -51,6 +51,8 @@ export default function Home() {
   const [produsModal, setProdusModal] = useState<Produs | null>(null)
   // Mesajul afișat în notificarea de tip "toast" la adăugarea în coș
   const [toastMessage, setToastMessage] = useState('')
+  // Referință către containerul grilei de produse pentru a controla scroll-ul
+  const productsGridRef = useRef<HTMLDivElement>(null)
 
   // Execută `fetchData` o singură dată la încărcarea componentei
   useEffect(() => {
@@ -58,6 +60,14 @@ export default function Home() {
   }, [])
 
   // Funcția care preia produsele și ingredientele din Supabase
+  // Hook pentru a derula la începutul listei de produse la schimbarea paginii
+  useEffect(() => {
+    // Se execută doar la schimbarea paginii, nu la încărcarea inițială
+    if (productsGridRef.current) {
+      productsGridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentPage]);
+
   const fetchData = async () => {
     // Preluare produse ordonate alfabetic
     const { data: prodData } = await supabase.from('products').select('*').order('nume')
@@ -295,7 +305,7 @@ export default function Home() {
         )}
 
         {/* Container pentru afișarea efectivă a produselor */}
-        <div className="flex-grow p-4 md:p-8">
+        <div ref={productsGridRef} className="flex-grow p-4 md:p-8">
           {produseAfișate.length === 0 ? (
             // Mesaj fallback afișat dacă niciun produs nu corespunde filtrelor/căutării
             <div className="text-center py-20">
