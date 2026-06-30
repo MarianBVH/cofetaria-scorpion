@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -15,6 +15,10 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null)
   // Flag care indică dacă utilizatorul curent are drepturi de administrator
   const [isAdmin, setIsAdmin] = useState(false)
+  // Stare pentru a controla deschiderea/închiderea meniului de cont
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  // Referință către elementul de meniu pentru a detecta click-urile în afara lui
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // 1. Verificăm dacă există deja o sesiune activă când se încarcă componenta
@@ -42,6 +46,21 @@ export default function Navbar() {
     // Funcția de curățare (cleanup) pentru a evita memory leaks când componenta este demontată
     return () => {
       authListener.subscription.unsubscribe()
+    }
+  }, [])
+
+  // Hook pentru a închide meniul de cont dacă se dă click în afara lui
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+    // Adaugă event listener
+    document.addEventListener('mousedown', handleClickOutside)
+    // Curăță event listener la demontarea componentei
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
 
@@ -101,12 +120,12 @@ export default function Navbar() {
             )}
 
             {/* Butonul Cont Dinamic */}
-            <div className="relative group">
-              <button className="hover:text-[#dda15e] transition flex items-center gap-1 py-2">
+            <div className="relative" ref={menuRef}>
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="hover:text-[#dda15e] transition flex items-center gap-1 py-2">
                 Cont ▾
               </button>
               
-              <div className="absolute right-0 top-full pt-2 w-48 hidden group-hover:block">
+              <div className={`absolute right-0 top-full pt-2 w-48 ${isMenuOpen ? 'block' : 'hidden'}`}>
                 <div className="bg-white text-gray-800 rounded-md shadow-lg border border-gray-100 overflow-hidden">
                   
                   {user ? (
@@ -121,7 +140,10 @@ export default function Navbar() {
                       )}
                       
                       {/* Butonul de deconectare este mereu vizibil pentru orice utilizator logat (client sau admin) */}
-                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition">
+                      <button onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }} className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition">
                         Deconectare
                       </button>
                     </>
@@ -129,7 +151,7 @@ export default function Navbar() {
                     // Meniul pentru un vizitator NEAUTENTIFICAT (Oaspete)
                     <>
                       <Link href="/login" className="block px-4 py-2 hover:bg-gray-50 border-b border-gray-100">Logare</Link>
-                      <Link href="/register" className="block px-4 py-2 hover:bg-gray-50">Înregistrare</Link>
+                      <Link href="/register" className="block px-4 py-2 hover:bg-gray-50">Înregistrare</Link> 
                     </>
                   )}
 
