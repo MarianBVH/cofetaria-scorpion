@@ -399,7 +399,7 @@ export default function Home() {
             <div className="h-64 rounded-lg overflow-hidden shadow-lg border-2 border-[#5c3d2e]">
               {/* NOU: Harta fixată pe Hârșova cu un Pin */}
               <iframe 
-                src="https://maps.google.com/maps?q=Soseaua%20Constantei%20nr.%2024,%20Harsova&t=&z=16&ie=UTF8&iwloc=&output=embed" 
+                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d709.1511081341328!2d27.95340912611859!3d44.68685732556653!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b08df330cc9759%3A0xba17f4c8105c9531!2sCofetaria%20scorpion!5e0!3m2!1sen!2sus!4v1782829328880!5m2!1sen!2sus" 
                 width="100%" 
                 height="100%" 
                 style={{border: 0}} 
